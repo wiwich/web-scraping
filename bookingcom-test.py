@@ -1,6 +1,7 @@
 import datetime
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 if __name__ == "main":
     headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"}
@@ -12,69 +13,109 @@ if __name__ == "main":
     rooms_no = 1
     currency = "AUD"
 
-    hotels = "<hotel-name-city>"
+    hotel1 = "<hotel-name1-city>"
+    hotel2 = "<hotel-name2-city>"
+    hotel3 = "<hotel-name3-city>"
 
-    hotel_url = "https://www.booking.com/hotel/au/"+hotels+".en-gb.html?checkin="+checkin_date+"&checkout="+checkout_date+"&group_adults="+str(adults_no)+"&group_children="+str(child_no)+"&no_rooms="+str(rooms_no)+"&selected_currency="+currency
+    hotels = [hotel1, hotel2, hotel3]
 
-    resp = requests.get(hotel_url,headers=headers)
+    urls = list()
 
-    if resp.status_code==200:
-        print("..url success!")
-    else: 
-        print("..url error")
+    for i in hotels:
+        url_gen = "https://www.booking.com/hotel/au/"+i+".en-gb.html?checkin="+checkin_date+"&checkout="+checkout_date+"&group_adults="+str(adults_no)+"&group_children="+str(child_no)+"&no_rooms="+str(rooms_no)+"&selected_currency="+currency
 
-    soup = BeautifulSoup(resp.text, 'html.parser')
+        urls.append(url_gen)
 
-    hotel_info = {}
-    hotel_info["name"] = soup.find("h2",{"class":"pp-header__title"}).text
-    hotel_info["address"] = soup.find("span",{"class":"hp_address_subtitle"}).text.strip("\n")
-    hotel_info["rating"] = soup.find("div",{"class":"a447b19dfd"}).text
+    hotels_df = pd.DataFrame()
 
-    facilities = soup.find("ul",{"b3605c5e50 eb11e518ca bdfadf615e"})
-    fac_lists = facilities.find_all("span",{"class":"e39ce2c19b"})
-    for i in range(len(fac_lists)):
-        fac_lists[i] = fac_lists[i].text.replace("\n","")
+    for i in range(len(urls)):    
+        resp = requests.get(urls[i],headers=headers)
 
-    hotel_info["facilities"] = fac_lists
-    print(hotel_info)
-
-    ids= list()
-
-    targetId=list()
-    try:
-        tr = soup.find_all("tr")
-    except:
-        tr = None
-
-    ids = list()
-    for y in range(0,len(tr)):
-        try:
-            id = tr[y].get('data-block-id')
-
-        except:
-            id = None
-            print("..no room available {}".format(checkin_date))
-
-        if( id is not None):
-            ids.append(id) 
-            
-    for i in range(0,len(ids)):    
-
-        allData = soup.find("tr",{"data-block-id":ids[i]})
-        #  try:
-        rooms = allData.find("span",{"class":"hprt-roomtype-icon-link"})
-        rooms = rooms.text.replace("\n","")
-        # print(rooms)
-
-        guests = allData.find("span",{"class":"bui-u-sr-only"})
-        guests = guests.text.replace("\n","")
-
-        prices = allData.find("div",{"class":"bui-price-display__value prco-text-nowrap-helper prco-inline-block-maker-helper prco-f-font-heading"})
-        prices = prices.text.replace("\n","")
+        if resp.status_code==200:
+            print("..{} url success!".format(urls[i]))
+        else: 
+            print("..{} url error".format(urls[i]))
         
-        print(rooms)
-        print(guests)
-        print(prices)
-        print("-------------")
+        soup = BeautifulSoup(resp.text, 'html.parser')
+
+        hotel_info = {}
+        hotel_info["name"] = soup.find("h2",{"class":"pp-header__title"}).text
+        hotel_info["address"] = soup.find("span",{"class":"hp_address_subtitle"}).text.strip("\n")
+        hotel_info["rating"] = soup.find("div",{"class":"a447b19dfd"}).text
+
+        facilities = soup.find("ul",{"b3605c5e50 eb11e518ca bdfadf615e"})
+        fac_lists = facilities.find_all("span",{"class":"e39ce2c19b"})
+        for j in range(len(fac_lists)):
+            fac_lists[j] = fac_lists[j].text.replace("\n","")
+        hotel_info["facilities"] = fac_lists
+
+        last_hotel_name = hotel_info["name"]
+
+        print(hotel_info)
+
+        ids= list()
+
+        targetId=list()
+        try:
+            tr = soup.find_all("tr")
+        except:
+            tr = None
+
+        ids = list()
+        for y in range(0,len(tr)):
+            try:
+                id = tr[y].get('data-block-id')
+
+            except:
+                id = None
+                print("..no room available {}".format(checkin_date))
+
+            if( id is not None):
+                ids.append(id) 
+                
+        for j in range(0,len(ids)):    
+            
+            allData = soup.find("tr",{"data-block-id":ids[j]})
+            try:
+                rooms = allData.find("span",{"class":"hprt-roomtype-icon-link"})
+                if rooms is not None:
+                    last_room = rooms.text.replace("\n","")
+                try: 
+                    rooms = rooms.text.replace("\n","")
+                except:
+                    if last_hotel_name == hotel_info["name"]:
+                        rooms = last_room
+                    else:
+                        rooms = None
+            except:
+                rooms = None
+            try:
+                guests = allData.find("span",{"class":"bui-u-sr-only"})
+                guests = guests.text.replace("\n","")
+            except:
+                guests = None
+            try:
+                prices = allData.find("div",{"class":"bui-price-display__value prco-text-nowrap-helper prco-inline-block-maker-helper prco-f-font-heading"})
+                prices = prices.text.replace("\n","")
+            except:
+                prices = None
+            
+            print(rooms)
+            print(guests)
+            print(prices)
+
+            if rooms is None and guests is None and prices is None: continue
+
+            room_info = {"room_type":rooms,"guests":guests,"prices":str(prices)}
+            print(room_info) 
+
+            info = {**hotel_info, **room_info}
+            hotels_df = hotels_df.append(info,ignore_index=True) 
+
+        print("-------------") 
+
+        filename = "<filename.csv>"
+        hotels_df.to_csv(filename, index=False)
+
 
 
