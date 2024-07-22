@@ -3,28 +3,17 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-if __name__ == "main":
-    headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"}
-
-    checkin_date = str(datetime.date.today()+ datetime.timedelta(days=1))
-    checkout_date = str(datetime.date.today()+ datetime.timedelta(days=2))
-    adults_no = 2
-    child_no = 0
-    rooms_no = 1
-    currency = "AUD"
-
-    hotel1 = "<hotel-name1-city>"
-    hotel2 = "<hotel-name2-city>"
-    hotel3 = "<hotel-name3-city>"
-
-    hotels = [hotel1, hotel2, hotel3]
-
+def getBookingUrls():
     urls = list()
 
     for i in hotels:
         url_gen = "https://www.booking.com/hotel/au/"+i+".en-gb.html?checkin="+checkin_date+"&checkout="+checkout_date+"&group_adults="+str(adults_no)+"&group_children="+str(child_no)+"&no_rooms="+str(rooms_no)+"&selected_currency="+currency
 
         urls.append(url_gen)
+    return urls
+
+def getHotelInfo(urls,checkin_date):
+    headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"}
 
     hotels_df = pd.DataFrame()
 
@@ -55,7 +44,6 @@ if __name__ == "main":
 
         ids= list()
 
-        targetId=list()
         try:
             tr = soup.find_all("tr")
         except:
@@ -113,9 +101,28 @@ if __name__ == "main":
             hotels_df = hotels_df.append(info,ignore_index=True) 
 
         print("-------------") 
+    return hotels_df
 
-        filename = "<filename.csv>"
-        hotels_df.to_csv(filename, index=False)
+def writeCsvFile(filename, df):    
+    df.to_csv(filename, index=False)
 
+if __name__ == "main":
+    
+    checkin_date = str(datetime.date.today()+ datetime.timedelta(days=1))
+    checkout_date = str(datetime.date.today()+ datetime.timedelta(days=2))
+    adults_no = 2
+    child_no = 0
+    rooms_no = 1
+    currency = "AUD"
 
+    hotel1 = "<hotel-name1-city>"
+    hotel2 = "<hotel-name2-city>"
+    hotel3 = "<hotel-name3-city>"
 
+    hotels = [hotel1, hotel2, hotel3]
+
+    urls = getBookingUrls(hotels, checkin_date, checkout_date, adults_no, child_no, rooms_no, currency)
+
+    hotels_df = getHotelInfo(urls,checkin_date)    
+    filename = "<filename.csv>"
+    writeCsvFile(filename, hotels_df)
