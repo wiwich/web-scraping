@@ -27,12 +27,19 @@ if __name__ == "main":
     # get the page source
     resp = driver.page_source
 
-    # get hotel name
+    # get hotel information
     hotel_info = {}
     soup=BeautifulSoup(resp,'html.parser')
     try:
         hotel_info["hotel"]=soup.find("h1").text
-    except:
-        hotel_info["hotel"]=None
+        hotel_info["desc"] = soup.find("div",{"class":"uitk-spacing uitk-spacing-margin-inlinestart-unset uitk-spacing-padding-blockstart-unset"}).text
+        hotel_info["address"] = soup.find("div",{"class":"uitk-text uitk-type-start uitk-type-300 uitk-text-default-theme"}).text
+        hotel_info["rating"] = soup.find("span",{"class":"uitk-badge-base-text"}).text
 
-    print(hotel_info["hotel"])
+    except:
+        hotel_info["hotel"] = None
+        hotel_info["desc"] = None
+        hotel_info["address"] = None
+        hotel_info["rating"] = None
+
+    print(hotel_info)
