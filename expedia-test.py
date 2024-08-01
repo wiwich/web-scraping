@@ -74,6 +74,6 @@ if __name__ == "main":
             price_room = None
     
         print(name_type)
-        print(room_info)
+        print(guests)
         print(price_room)
         print("---------")
