@@ -26,10 +26,11 @@ if __name__ == "main":
 
     # get the page source
     resp = driver.page_source
-
+    
+    soup=BeautifulSoup(resp,'html.parser')
+    
     # get hotel information
     hotel_info = {}
-    soup=BeautifulSoup(resp,'html.parser')
     try:
         hotel_info["hotel"]=soup.find("h1").text
         hotel_info["desc"] = soup.find("div",{"class":"uitk-spacing uitk-spacing-margin-inlinestart-unset uitk-spacing-padding-blockstart-unset"}).text
@@ -42,4 +43,29 @@ if __name__ == "main":
         hotel_info["address"] = None
         hotel_info["rating"] = None
 
-    print(hotel_info)
+    print(hotel_info) # return dict 
+
+    # scrape the room-type data
+    try:
+        allOffers = soup.find("div",{"data-stid":"section-room-list"})
+    except:
+        allOffers = None
+        print('..allOffers no data!')
+    
+    offers_room = allOffers.find_all("div",{"class":"uitk-layout-flex uitk-layout-flex-block-size-full-size uitk-layout-flex-flex-direction-column uitk-layout-flex-justify-content-space-between uitk-card uitk-card-roundcorner-all uitk-card-has-border uitk-card-has-overflow uitk-card-has-primary-theme"})
+    for offer in offers_room:
+        try:
+            # get room name
+            name_type = offer.find("h3",{"class":"uitk-heading uitk-heading-6"}).text
+        except:
+            name_type = None
+        try:
+            # get room price
+            price_room = offer.find("div",{"class":"uitk-text uitk-type-500 uitk-type-medium uitk-text-emphasis-theme"}).text
+        except:
+            price_room = None
+    
+        print(name_type)
+        # print(room_info)
+        print(price_room)
+        print("---------")
