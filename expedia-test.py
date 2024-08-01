@@ -59,14 +59,14 @@ if __name__ == "main":
             name_type = offer.find("h3",{"class":"uitk-heading uitk-heading-6"}).text
         except:
             name_type = None
-        room_info = list()
         try: 
-            # get info lists
+            # get guests
             rm_info = offer.find("ul",{"class":"uitk-typelist uitk-typelist-orientation-stacked uitk-typelist-size-2 uitk-typelist-spacing uitk-spacing uitk-spacing-margin-blockstart-three"})
             for tmp in rm_info:
-                room_info.append(tmp.text)
+                if "Sleeps" in tmp.text:
+                    guests = tmp.text
         except:
-            room_info = None
+            guests = None
         try:
             # get room price
             price_room = offer.find("div",{"class":"uitk-text uitk-type-500 uitk-type-medium uitk-text-emphasis-theme"}).text
