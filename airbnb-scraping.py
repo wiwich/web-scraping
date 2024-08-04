@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+import pandas as pd
 import time
 
 CHROMEDRIVER_PATH = r"C:\<path>\chromedriver.exe"
@@ -41,4 +42,10 @@ if __name__ == "main":
             tmp_info["price"] = None
         
         hotel_list.append(tmp_info)
-        print(tmp_info)
+        
+        hotel_df = pd.DataFrame(hotel_list)
+
+        print(hotel_df)
+
+        filename = "<filename.csv>"
+        df.to_csv(filename,ignore_index=True)
