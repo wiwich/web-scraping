@@ -55,4 +55,6 @@ if __name__ == "main":
 
     hotel_df = pd.DataFrame(hotel_list)
     hotel_df.to_csv(export_filename,index=False)
-    
+
+    driver.close() # closes the browser window in focus
+    driver.quit() # quits the browser 
