@@ -2,18 +2,27 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 import pandas as pd
+import datetime
 import time
 
 CHROMEDRIVER_PATH = r"C:\<path>\chromedriver.exe"
 
 if __name__ == "main":
-    target_url = "https://www.expedia.com.au/<hotel-url-path>"
+    # TODO: set variable
+    search_city = "Sydney--Australia"
+    adults_no = 1
+    checkin_date = str(datetime.date.today()+ datetime.timedelta(days=1))
+    checkout_date = str(datetime.date.today()+ datetime.timedelta(days=2))
+    currency = "AUD"
+    export_filename = "<filename.csv>"
+    
+    target_url = "https://www.airbnb.co.in/s/"+search_city+"/homes?adults="+str(adults_no)+"&checkin="+checkin_date+"&checkout="+checkout_date+"&currency="+currency
 
     service = Service(executable_path=CHROMEDRIVER_PATH)
     options = webdriver.ChromeOptions()
     driver = webdriver.Chrome(service=service, options=options)
 
-    driver.get("https://www.airbnb.co.in/s/Sydney--Australia/homes?adults=1&checkin=2024-12-17&checkout=2024-12-18&currency=AUD")
+    driver.get(target_url)
     time.sleep(5)
 
     html_content = driver.page_source
@@ -44,7 +53,7 @@ if __name__ == "main":
         hotel_list.append(tmp_info)
         
         hotel_df = pd.DataFrame(hotel_list)
-
+        hotel_df.to_csv(export_filename,index=False)
         print(hotel_df)
 
         filename = "<filename.csv>"
