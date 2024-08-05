@@ -52,9 +52,9 @@ if __name__ == "main":
         
         hotel_list.append(tmp_info)
         
-        hotel_df = pd.DataFrame(hotel_list)
-        hotel_df.to_csv(export_filename,index=False)
-        print(hotel_df)
+    hotel_df = pd.DataFrame(hotel_list)
+    hotel_df.to_csv(export_filename,index=False)
 
-        filename = "<filename.csv>"
-        df.to_csv(filename,ignore_index=True)
+    df.to_csv(export_filename,index=False)
+
+    driver.close()
