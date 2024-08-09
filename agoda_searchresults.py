@@ -7,6 +7,8 @@ import pandas as pd
 CHROMEDRIVER_PATH = r"C:\<path>\chromedriver.exe"
 
 if __name__ == "main":
+    # TODO: set variable
+    export_filename = "<filename.csv>"
     target_url ="https://www.agoda.com/en-au/search?<url>"
 
     service = Service(executable_path=CHROMEDRIVER_PATH)
@@ -49,3 +51,8 @@ if __name__ == "main":
             print(tmp_info) 
 
     hotel_df = pd.DataFrame(hotel_list) # convert to DataFrame
+
+    hotel_df.to_csv(export_filename,index=False)
+
+    driver.close()
+    driver.quit()
