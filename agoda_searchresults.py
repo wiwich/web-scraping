@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 import time
-import datetime
+import pandas as pd
 
 CHROMEDRIVER_PATH = r"C:\<path>\chromedriver.exe"
 
@@ -16,17 +16,23 @@ if __name__ == "main":
     driver.get(target_url)
     time.sleep(5)   
 
+    # define the number of times to scrolls
+    scroll_count = 20
+    # continuous scrolling 
+    for _ in range(scroll_count):
+        driver.execute_script("window.scrollTo(0, window.scrollY + 1000)")
+        time.sleep(1)  # Wait for the new results to load 
+
     html_content = driver.page_source
 
     soup = BeautifulSoup(html_content,'html.parser')
     allData = soup.find_all("div",{"data-element-name":"PropertyCardBaseJacket"})
 
-    
+    hotel_list = []
     for i in range(len(allData)):
         tmp_info = {}
         try:
             tmp_info["name"] = allData[i].find('h3',{'class':'spacing-sc-tu168e-0 Typographystyled__TypographyStyled-sc-1uoovui-0 gfaUTV cYUUCV'}).text
-            # tmp_info["name"] = allData[i].find('h3',{'class':'spacing-sc-tu168e-0 Typographystyled__TypographyStyled-sc-1uoovui-0 gfaUTV cYUUCV'})
         except:
             tmp_info["name"] = None
         try:
@@ -39,6 +45,7 @@ if __name__ == "main":
             tmp_info["price"] = None
             
         if tmp_info["name"] != None:
+            hotel_list.append(tmp_info)
             print(tmp_info) 
 
-    # limitation of item lists
+    hotel_df = pd.DataFrame(hotel_list) # convert to DataFrame
